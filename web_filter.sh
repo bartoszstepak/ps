@@ -7,11 +7,10 @@ websiteUrl=""
 confidDir="/config"
 keyWord=""
 websites=()
-
-rm -r "config" 
+instinstal
 mkdir -p config
 
-Help()
+function Help()
 {
         echo "This script can filter website by given key-word using website's HTML file."
         echo "You can create a configuration file where the first line will be your key wore and the next lines will be the full website's URL. There is a connected example file named config.txt"
@@ -25,7 +24,7 @@ Help()
         echo "h print this help"
 }
 
-isPackageNotInstalled() {
+function isPackageNotInstalled() {
     dpkg --status $1 &> /dev/null
 
     if [ $? -eq 0 ]; then
@@ -43,6 +42,10 @@ isPackageNotInstalled() {
         fi 
     fi
 }
+    
+isPackageNotInstalled "libxml2-utils"
+isPackageNotInstalled "dos2unix" 
+isPackageNotInstalled "ruby-nokogiri"
 
 function check_if_paramater_has_Valid_argumetn {
 	if [[ $1 == "-h" ]];
@@ -91,7 +94,6 @@ while getopts ":hc:" option; do
             exit;;
         c)   
             check_if_paramater_has_Valid_argumetn $OPTARG
-            install_libraries
             configFileDir=$OPTARG
             isConfigurationFileExist=true
             get_configuration_data_from_config_file
@@ -139,7 +141,6 @@ function get_filered_links {
     #cat config/hrefElements | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*" >config/finalLinks
     awk -F 'href="|"  |">|</' '{for(i=2;i<=NF;i=i+4) print $i,$(i+2)}' config/hrefElements >config/links
     sed 's/..$//' < config/links > config/finalLinks
-    sort config/finalLinks | uniq -u 
     chechk_if_file_is_not_empty "config/finalLinks"
 }
 
@@ -187,11 +188,6 @@ function create_new_configuration_data_on_Confirm {
     fi 
 }
 
-function install_libraries {
-    isPackageNotInstalled "libxml2-utils"
-    isPackageNotInstalled "dos2unix" 
-    isPackageNotInstalled "ruby-nokogiri"
-}
 
 if [[ $isConfigurationFileExist = false ]];
 then 
@@ -201,4 +197,5 @@ fi
 get_filered_links
 display_result
 rm -r "config" 
+
 exit 1;

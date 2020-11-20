@@ -7,7 +7,7 @@ websiteUrl=""
 confidDir="/config"
 keyWord=""
 websites=()
-instinstal
+
 mkdir -p config
 
 function Help()

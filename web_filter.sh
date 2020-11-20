@@ -135,6 +135,7 @@ fi
 
 function get_filered_links {
     echo "Start filtring ..."
+    keyWord= $(echo "$keyWord" | tr '[:upper:]' '[:lower:]')
     tr '[:upper:]' '[:lower:]' <config/hyperlinkTags >config/hyperlinkTagsToLowerCase
     grep -w $keyWord  config/hyperlinkTagsToLowerCase >config/FiltredHyperlinkTags
     xmllint  --html --xpath "//a/@href"  "config/FiltredHyperlinkTags" 2>/dev/null  >config/hrefElements

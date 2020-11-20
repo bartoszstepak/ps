@@ -15,7 +15,7 @@ Help()
         echo "This script can filter website by given key-word using website's HTML file."
         echo "You can create a configuration file where the first line will be your key wore and the next lines will be the full website's URL (https://.....). There is a connected example file named config.txt"
         echo "To run scrip using config file use command:"
-        echo "$ ./web_filter.sh -c configu.txt"
+        echo "$ ./web_filter.sh -c config.txt"
         echo "To run scrip and put data during working execute:"
         echo "$ ./web_filter.sh"
         echo "After finished filtration, you will be able to perform it another time and put a different data"

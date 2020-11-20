@@ -7,19 +7,15 @@ websiteUrl=""
 confidDir="/config"
 keyWord=""
 websites=()
-<<<<<<< HEAD
 instinstal
-=======
-
->>>>>>> 735bbf98ac50d6111168c64f118c3dd70b6c087f
 mkdir -p config
 
 function Help()
 {
         echo "This script can filter website by given key-word using website's HTML file."
-        echo "You can create a configuration file where the first line will be your key wore and the next lines will be the full website's URL (https://.....). There is a connected example file named config.txt"
+        echo "You can create a configuration file where the first line will be your key wore and the next lines will be the full website's URL. There is a connected example file named config.txt"
         echo "To run scrip using config file use command:"
-        echo "$ ./web_filter.sh -c config.txt"
+        echo "$ ./web_filter.sh -c configu.txt"
         echo "To run scrip and put data during working execute:"
         echo "$ ./web_filter.sh"
         echo "After finished filtration, you will be able to perform it another time and put a different data"
@@ -116,7 +112,7 @@ function create_configuration_data {
     echo "What is the key-word you want to filter by" 
     read keyWord
     echo "Your key-word -> " $keyWord
-    echo "Wchis website do you want to filter? Enter full URL if you want to filter in more than one website at once, create configuration file -> more inforamtion in help [-h]"
+    echo "Wchis website do you want to filter? Enter full URL" \n websiteUrl \n "if you want to filter in more than one website at once, create configuration file -> more inforamtion in help [-h]"
     read websiteUrl
     echo "Your website -> " $websiteUrl
     > config/hyperlinkTags

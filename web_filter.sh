@@ -8,7 +8,6 @@ confidDir="/config"
 keyWord=""
 websites=()
 
-rm -r "config" 
 mkdir -p config
 
 Help()

@@ -12,40 +12,45 @@ mkdir -p config
 
 function Help()
 {
-        echo "This script can filter website by given key-word using website's HTML file."
-        echo "You can create a configuration file where the first line will be your key wore and the next lines will be the full website's URL. There is a connected example file named config.txt"
-        echo "To run scrip using config file use command:"
-        echo "$ ./web_filter.sh -c configu.txt"
-        echo "To run scrip and put data during working execute:"
-        echo "$ ./web_filter.sh"
-        echo "After finished filtration, you will be able to perform it another time and put a different data"
-
-        echo "Syntax": scrpitTemplate [-h]
-        echo "h print this help"
+    echo -e "_________________WEB FILTER HELP_________________\n"
+    echo "___DESCRIPTION"
+    echo -e "This script allows users to get hyperlinks from web news services to specifics articles. The user has to provide a keyword and a full link to news service/services (tested and designed for polish websites). Hyperlinks are taken from an HTML file that is sent to the browser. Script extracts each HTML's 'a' tag with whole subtags inside the HTML's tag tree. Later script process and filter this data using a given keyword. If there will be a hyperlink connected with the keyword provided in 'a' tag, with address in 'href' element scrip will separate the hyperlink and print results in the terminal.\n" 
+    echo "___LIMITS"
+    echo -e "Script base on searching inside HTML file build in a classic way. If the code will have an unusual structure or a URLs in HTML file will be placed in an unexpected possitions or given website dont return simple HTML file the script will not handle the filtration correctly.\n"
+    echo "___EXECUTION"
+    echo -e "To get hyperlinks from more than one website, you can create a configuration file where the first line will be your key wore and the next lines will be the full website's URL.\n"
+    echo "1. To run scrip using config file use command:"
+    echo -e "$ ./web_filter.sh -c config.txt\n"
+    echo "2. To run scrip and put data during working execute:"
+    echo -e "$ ./web_filter.sh\n"
+    echo "3. To run help execute"
+    echo -e "$ ./web_filter.sh -h\n"
+    echo -e "There is a connected example file named config.txt\n"
+    echo "___IMPORTANT INFO"
+    echo -e "Remeber to provide full url like (https://www.website.com)\n"
 }
 
 function isPackageNotInstalled() {
-    dpkg --status $1 &> /dev/null
+    if [[ $executeParameter != "h" ]]; then 
+        dpkg --status $1 &> /dev/null
 
-    if [ $? -eq 0 ]; then
-        echo "$1: Already installed"
-    else
-        echo "___________________________Confirm action___________________________"
-        echo "You dont have installed "$1
-        read -r -p "It is nessesry to install this library. If do you agree type [Y/n] " response
-        if [[ "$response" =~ ^([yY])$ ]]
-        then
-            sudo apt-get install -y $1
+        if [ $? -eq 0 ]; then
+            echo "$1: Already installed"
         else
-            echo "Can not install " $1 ". Ending scrip"
-            exit 1;
-        fi 
+            echo "___________________________Confirm action___________________________"
+            echo "You dont have installed "$1
+            read -r -p "It is nessesry to install this library. If do you agree type [Y/n]" response
+            if [[ "$response" =~ ^([yY])$ ]]
+            then
+                sudo apt-get install -y $1
+            else
+                echo "Can not install " $1 ". Ending scrip"
+                exit 1;
+            fi 
+        fi
     fi
 }
     
-isPackageNotInstalled "libxml2-utils"
-isPackageNotInstalled "dos2unix" 
-isPackageNotInstalled "ruby-nokogiri"
 
 function check_if_paramater_has_Valid_argumetn {
 	if [[ $1 == "-h" ]];
@@ -83,16 +88,27 @@ function get_configuration_data_from_config_file {
     echo "key-word -> "$keyWord
 }
 
+function install_libraries {
+    echo -e "___requirements__"
+    isPackageNotInstalled "libxml2-utils"
+    isPackageNotInstalled "dos2unix" 
+    isPackageNotInstalled "ruby-nokogiri"
+    isPackageNotInstalled "curl"
+    echo
+}
 
 while getopts ":hc:" option; do
     case $option in
         h) 
+            executeParameter="h"
             Help
             exit;;
         \?)
             Help
+            executeParameter="h"
             exit;;
-        c)   
+        c)  
+            install_libraries
             check_if_paramater_has_Valid_argumetn $OPTARG
             configFileDir=$OPTARG
             isConfigurationFileExist=true
@@ -112,7 +128,7 @@ function create_configuration_data {
     echo "What is the key-word you want to filter by" 
     read keyWord
     echo "Your key-word -> " $keyWord
-    echo "Wchis website do you want to filter? Enter full URL" \n websiteUrl \n "if you want to filter in more than one website at once, create configuration file -> more inforamtion in help [-h]"
+    echo "Wchis website do you want to filter? Enter full URL if you want to filter in more than one website at once, create configuration file -> more inforamtion in help [-h]"
     read websiteUrl
     echo "Your website -> " $websiteUrl
     > config/hyperlinkTags
@@ -123,26 +139,27 @@ function create_configuration_data {
     read -n 1 -s -r -p "Press [ANY KEY] to continue"
 }
 
-function chechk_if_file_is_not_empty {
+function chechk_if_found_data {
  if [ -s "$1" ]
 then 
-   echo "Sucessfully filtred data from websites!"
+   echo -e "Sucessfully filtred data from websites!\n"
+   display_result
 else
    echo "No data found for keyword - "$keyWord
-   exit 1;
+   echo "Check if you are using correct URL address. For more details check the help."
 fi   
 }
 
 function get_filered_links {
     echo "Start filtring ..."
-    keyWord= $(echo "$keyWord" | tr '[:upper:]' '[:lower:]')
+    keyWord=$(echo "$keyWord" | tr '[:upper:]' '[:lower:]')
     tr '[:upper:]' '[:lower:]' <config/hyperlinkTags >config/hyperlinkTagsToLowerCase
-    grep -w $keyWord  config/hyperlinkTagsToLowerCase >config/FiltredHyperlinkTags
+    grep  $keyWord  config/hyperlinkTagsToLowerCase >config/FiltredHyperlinkTags
     xmllint  --html --xpath "//a/@href"  "config/FiltredHyperlinkTags" 2>/dev/null  >config/hrefElements
     #cat config/hrefElements | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*" >config/finalLinks
     awk -F 'href="|"  |">|</' '{for(i=2;i<=NF;i=i+4) print $i,$(i+2)}' config/hrefElements >config/links
     sed 's/..$//' < config/links > config/finalLinks
-    chechk_if_file_is_not_empty "config/finalLinks"
+    chechk_if_found_data "config/finalLinks"
 }
 
 function get_url_to_open {
@@ -170,7 +187,7 @@ function display_result {
         ((counter=counter+1))
     done 
 
-    echo "************************************************************"
+    echo -e "************************************************************\n"
     create_new_configuration_data_on_Confirm
 }
 
@@ -181,8 +198,6 @@ function create_new_configuration_data_on_Confirm {
     then
         create_configuration_data
         get_filered_links
-        display_result
-        rm -r "config"
     else
         rm -r "config"
         exit 1;
@@ -191,12 +206,12 @@ function create_new_configuration_data_on_Confirm {
 
 
 if [[ $isConfigurationFileExist = false ]];
-then 
+then
+    install_libraries
     create_configuration_data
 fi
 
 get_filered_links
-display_result
-rm -r "config" 
+# rm -r "config" 
 
 exit 1;
